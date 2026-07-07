@@ -1,0 +1,3 @@
+<template><view class="card"><image :src="icon" mode="widthFix"/><text class="title">{{title}}</text><text class="desc">{{desc}}</text></view></template>
+<script setup lang="ts">defineProps<{title:string,desc:string,icon:string}>()</script>
+<style scoped>.card{height:500rpx;border-radius:42rpx;background:#fff;display:flex;flex-direction:column;align-items:center;padding-top:70rpx;box-shadow:0 10rpx 30rpx rgba(50,80,120,.08)}image{width:120rpx}.title{margin-top:50rpx;font-size:38rpx;font-weight:700}.desc{margin-top:18rpx;color:#68758d}</style>
