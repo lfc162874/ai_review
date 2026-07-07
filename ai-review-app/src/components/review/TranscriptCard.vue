@@ -1,0 +1,2 @@
+<template><view class="card"><view class="title">▣ 实时转写 <text>● 识别中</text></view><slot/></view></template>
+<style scoped>.card{background:#fff;border-radius:36rpx;padding:35rpx;box-shadow:0 10rpx 30rpx rgba(50,80,120,.08)}.title{font-size:36rpx;font-weight:700;margin-bottom:20rpx}.title text{float:right;color:#3788ff;font-size:24rpx}</style>
