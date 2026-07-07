@@ -2,9 +2,11 @@
   "pages": [
     {
       "path": "pages/index/index",
-      "style": {
-        "navigationStyle": "custom"
-      }
+      "style": {"navigationStyle":"custom"}
+    },
+    {
+      "path": "pages/review/voice",
+      "style": {"navigationStyle":"custom"}
     }
   ],
   "tabBar": {
