@@ -1,0 +1,18 @@
+{
+  "name": "ai-review-app",
+  "version": "1.0.0",
+  "scripts": {
+    "dev:h5": "uni -p h5",
+    "dev:mp-weixin": "uni -p mp-weixin",
+    "build:h5": "uni build -p h5"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "pinia": "latest"
+  },
+  "devDependencies": {
+    "@dcloudio/vite-plugin-uni": "latest",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}
