@@ -1,0 +1,24 @@
+{
+  "name": "ai-review-server",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "nest start",
+    "start:dev": "nest start --watch",
+    "build": "nest build"
+  },
+  "dependencies": {
+    "@nestjs/common": "latest",
+    "@nestjs/core": "latest",
+    "@nestjs/platform-express": "latest",
+    "@nestjs/websockets": "latest",
+    "prisma": "latest",
+    "@prisma/client": "latest",
+    "redis": "latest",
+    "reflect-metadata": "latest",
+    "rxjs": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@nestjs/cli": "latest"
+  }
+}
