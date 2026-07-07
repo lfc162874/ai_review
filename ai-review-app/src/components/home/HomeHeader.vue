@@ -1,0 +1,2 @@
+<template><view class="header"><text class="title">AI复盘 ✦</text><text class="desc">像聊天一样复盘，像教练一样总结</text></view></template>
+<style scoped>.header{padding-top:70rpx}.title{font-size:64rpx;font-weight:800}.desc{display:block;margin-top:18rpx;color:#68758d;font-size:30rpx}</style>
