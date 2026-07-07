@@ -1,0 +1,2 @@
+<template><view class="voice-circle"><image src="/static/icons/listen.svg"/><view class="pulse"></view></view></template>
+<style scoped>.voice-circle{width:280rpx;height:280rpx;border-radius:50%;background:linear-gradient(135deg,#6db5ff,#3788ff);display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 0 80rpx rgba(55,136,255,.35)}image{width:130rpx;z-index:2}.pulse{position:absolute;inset:-20rpx;border-radius:50%;border:20rpx solid rgba(55,136,255,.12)}</style>
