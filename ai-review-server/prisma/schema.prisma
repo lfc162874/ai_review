@@ -1,0 +1,4 @@
+// AI Review database schema
+// PostgreSQL + Prisma
+
+// TODO: add user, review, conversation, moment models
