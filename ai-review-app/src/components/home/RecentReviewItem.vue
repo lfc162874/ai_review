@@ -1,0 +1,3 @@
+<template><view class="item"><view class="icon">{{icon}}</view><view><text class="title">{{title}}</text><text class="meta">{{meta}}</text></view></view></template>
+<script setup lang="ts">defineProps<{title:string,meta:string,icon:string}>()</script>
+<style scoped>.item{height:150rpx;background:#fff;border-radius:30rpx;display:flex;align-items:center;padding:0 25rpx}.icon{font-size:50rpx;margin-right:20rpx}.title{display:block;font-size:34rpx;font-weight:700}.meta{display:block;color:#8994a8;margin-top:10rpx}</style>
