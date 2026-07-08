@@ -1,0 +1,40 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- 外框 -->
+    <rect
+            x="10"
+            y="8"
+            width="28"
+            height="32"
+            rx="8"
+            stroke="#9AA4B2"
+            stroke-width="3"
+    />
+
+
+    <!-- 时间线 -->
+    <path
+            d="M17 18H31"
+            stroke="#9AA4B2"
+            stroke-width="3"
+            stroke-linecap="round"
+    />
+
+    <path
+            d="M17 25H28"
+            stroke="#9AA4B2"
+            stroke-width="3"
+            stroke-linecap="round"
+    />
+
+
+    <!-- 小趋势线 -->
+    <path
+            d="M17 33L22 28L26 32L32 26"
+            stroke="#9AA4B2"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+    />
+
+</svg>

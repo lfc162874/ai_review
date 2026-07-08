@@ -1,0 +1,275 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import HomeTabBar from '@/components/home/HomeTabBar.vue'
+
+interface Message {
+  type: 'ai' | 'user'
+  text: string
+}
+
+const messages = ref<Message[]>([
+  { type: 'ai', text: '这周最值得记录的一件事是什么？' },
+  { type: 'user', text: '我们上线了权限中心重构的第一版，虽然过程很曲折，但总算落地了。' },
+  { type: 'ai', text: '有没有一件事让你印象很深？' },
+  { type: 'user', text: '有个需求临时改了三次，差点影响了排期，挺考验团队协作的。' },
+  { type: 'ai', text: '如果重来一次，你最想优化什么？' },
+  { type: 'user', text: '我想在需求评审阶段就把边界和优先级对齐清楚。' },
+])
+
+const inputText = ref('')
+
+const goBack = () => {
+  uni.navigateBack()
+}
+
+const sendMessage = () => {
+  const text = inputText.value.trim()
+  if (!text) return
+  messages.value.push({ type: 'user', text })
+  inputText.value = ''
+}
+
+const startVoice = () => {
+  uni.showToast({ title: '长按说话功能开发中', icon: 'none' })
+}
+</script>
+
+<template>
+  <view class="page">
+    <view class="bg" />
+
+    <!-- Header -->
+    <view class="header">
+      <view class="back" @click="goBack">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 6L10 16L20 26" stroke="#14223A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </view>
+      <view class="title-wrap">
+        <text class="title">对话复盘</text>
+        <image class="sparkle" src="/static/icons/sparkles.svg" mode="widthFix" />
+      </view>
+      <text class="sub">AI 会根据你的回答一步步引导你</text>
+    </view>
+
+    <!-- Chat list -->
+    <view class="chat-list">
+      <view v-for="(msg, index) in messages" :key="index" :class="['message', msg.type]">
+        <image
+          class="avatar"
+          :src="msg.type === 'ai' ? '/static/icons/chat/ai_avatar.svg' : '/static/icons/chat/user_avatar.svg'"
+          mode="widthFix"
+        />
+        <view class="bubble">
+          <text>{{ msg.text }}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- Bottom hint -->
+    <view class="hint">
+      <image class="hint-icon" src="/static/icons/chat/voice.svg" mode="widthFix" />
+      <text>也可以长按说话，AI 会自动整理重点</text>
+    </view>
+
+    <!-- Input bar -->
+    <view class="input-bar">
+      <input
+        class="input"
+        v-model="inputText"
+        placeholder="输入你的想法..."
+        placeholder-class="placeholder"
+      />
+      <view class="action-btn" @click="inputText.trim() ? sendMessage() : startVoice()">
+        <!-- 麦克风图标 -->
+        <svg v-if="!inputText.trim()" width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="18" y="8" width="12" height="22" rx="6" fill="white"/>
+          <path d="M12 25C12 33 18 37 24 37C30 37 36 33 36 25M24 37V42" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+        <!-- 发送图标 -->
+        <svg v-else width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M42 6L8 22L22 26L26 40L42 6Z" fill="white"/>
+          <path d="M22 26L42 6" stroke="#3788FF" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </view>
+    </view>
+
+    <HomeTabBar active="review" />
+  </view>
+</template>
+
+<style scoped>
+.page {
+  min-height: 100vh;
+  background: #f8fbff;
+  padding: 90rpx 30rpx 200rpx;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 420rpx;
+  background: linear-gradient(180deg, #eaf5ff 0%, #f8fbff 100%);
+  z-index: 0;
+}
+
+/* Header */
+.header {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 40rpx;
+}
+
+.back {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: -10rpx;
+  margin-bottom: 20rpx;
+}
+
+.back svg {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: flex-start;
+}
+
+.title {
+  font-size: 56rpx;
+  font-weight: 800;
+  color: #14223a;
+  line-height: 1;
+}
+
+.sparkle {
+  width: 44rpx;
+  height: 44rpx;
+  margin-left: 10rpx;
+  margin-top: -6rpx;
+}
+
+.sub {
+  display: block;
+  margin-top: 14rpx;
+  color: #68758d;
+  font-size: 28rpx;
+}
+
+/* Chat list */
+.chat-list {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 30rpx;
+}
+
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: 18rpx;
+}
+
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.avatar {
+  width: 76rpx;
+  height: 76rpx;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.bubble {
+  max-width: 74%;
+  padding: 26rpx 30rpx;
+  border-radius: 32rpx;
+  font-size: 30rpx;
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.ai .bubble {
+  background: #fff;
+  color: #14223a;
+  border-top-left-radius: 8rpx;
+  box-shadow: 0 4rpx 16rpx rgba(50, 80, 120, 0.06);
+}
+
+.user .bubble {
+  background: #e9f2ff;
+  color: #14223a;
+  border-top-right-radius: 8rpx;
+}
+
+/* Hint */
+.hint {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40rpx;
+  color: #8994a8;
+  font-size: 26rpx;
+}
+
+.hint-icon {
+  width: 36rpx;
+  height: 36rpx;
+  margin-right: 10rpx;
+}
+
+/* Input bar */
+.input-bar {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 24rpx;
+  background: #fff;
+  border-radius: 44rpx;
+  padding: 12rpx 12rpx 12rpx 30rpx;
+  box-shadow: 0 10rpx 30rpx rgba(50, 80, 120, 0.06);
+}
+
+.input {
+  flex: 1;
+  height: 70rpx;
+  font-size: 30rpx;
+  color: #14223a;
+}
+
+.placeholder {
+  color: #b0b9c8;
+}
+
+.action-btn {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: #3788ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.action-btn svg {
+  width: 40rpx;
+  height: 40rpx;
+}
+</style>

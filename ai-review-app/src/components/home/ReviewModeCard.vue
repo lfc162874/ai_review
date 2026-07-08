@@ -15,9 +15,9 @@ const props = defineProps<{ title:string; desc:string; type:'voice'|'chat' }>()
 
 const handleClick = () => {
   if (props.type === 'voice') {
-    uni.navigateTo({
-      url:'/pages/review/voice'
-    })
+    uni.navigateTo({ url: '/pages/review/voice' })
+  } else if (props.type === 'chat') {
+    uni.navigateTo({ url: '/pages/review/chat' })
   }
 }
 </script>

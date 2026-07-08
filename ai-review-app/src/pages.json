@@ -7,6 +7,18 @@
     {
       "path": "pages/review/voice",
       "style": {"navigationStyle":"custom"}
+    },
+    {
+      "path": "pages/review/result",
+      "style": {"navigationStyle":"custom"}
+    },
+    {
+      "path": "pages/review/chat",
+      "style": {"navigationStyle":"custom"}
+    },
+    {
+      "path": "pages/growth/index",
+      "style": {"navigationStyle":"custom"}
     }
   ],
   "tabBar": {

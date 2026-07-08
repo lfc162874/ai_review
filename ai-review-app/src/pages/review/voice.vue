@@ -39,7 +39,10 @@ onMounted(() => {
     <view class="bg" />
 
     <view class="header">
-      <text class="title">语音复盘中 ✦</text>
+      <view class="title-wrap">
+        <text class="title">语音复盘中</text>
+        <image class="sparkle" src="/static/icons/sparkles.svg" mode="widthFix" />
+      </view>
       <text class="sub">边说边记，AI 正在帮你整理</text>
     </view>
 
@@ -50,17 +53,91 @@ onMounted(() => {
     </view>
 
     <TranscriptCard>
-      <text class="content">{{ reviewStore.transcript || '等待你的分享，AI 会实时整理你的复盘内容...' }}</text>
+      <text class="transcript-text">{{ reviewStore.transcript || '等待你的分享，AI 会实时整理你的复盘内容...' }}</text>
     </TranscriptCard>
 
     <InsightCard />
 
     <FinishButton />
 
-    <HomeTabBar />
+    <HomeTabBar active="review" />
   </view>
 </template>
 
 <style scoped>
-.page{min-height:100vh;background:#f8fbff;padding:70rpx 40rpx 180rpx}.bg{position:absolute;top:0;left:0;right:0;height:400rpx;background:linear-gradient(#edf7ff,#fff)}.header{position:relative}.title{font-size:58rpx;font-weight:800}.sub{display:block;margin-top:18rpx;color:#68758d;font-size:30rpx}.voice-area{text-align:center;margin-top:70rpx}.wave{color:#76b1ff;font-size:55rpx;margin-top:30rpx}.listen{display:block;margin-top:20rpx;color:#68758d}.content{font-size:32rpx;line-height:1.8}
+.page {
+  min-height: 100vh;
+  background: #f8fbff;
+  padding: 60rpx 40rpx 200rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 480rpx;
+  background: linear-gradient(180deg, #eaf5ff 0%, #f8fbff 100%);
+  z-index: 0;
+}
+
+.header {
+  position: relative;
+  z-index: 1;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: flex-start;
+}
+
+.title {
+  font-size: 56rpx;
+  font-weight: 800;
+  color: #14223a;
+  line-height: 1;
+}
+
+.sparkle {
+  width: 44rpx;
+  height: 44rpx;
+  margin-left: 10rpx;
+  margin-top: -6rpx;
+}
+
+.sub {
+  display: block;
+  margin-top: 14rpx;
+  color: #68758d;
+  font-size: 28rpx;
+}
+
+.voice-area {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-top: 30rpx;
+}
+
+.wave {
+  color: #76b1ff;
+  font-size: 48rpx;
+  margin-top: 20rpx;
+  text-align: center;
+}
+
+.listen {
+  display: block;
+  margin-top: 10rpx;
+  color: #68758d;
+  font-size: 30rpx;
+}
+
+.transcript-text {
+  font-size: 30rpx;
+  line-height: 1.7;
+  color: #14223a;
+}
 </style>

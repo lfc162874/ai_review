@@ -48,7 +48,7 @@ const recent = [
       <RecentReviewItem v-for="item in recent" :key="item.title" v-bind="item" />
     </view>
 
-    <HomeTabBar />
+    <HomeTabBar active="home" />
   </view>
 </template>
 
