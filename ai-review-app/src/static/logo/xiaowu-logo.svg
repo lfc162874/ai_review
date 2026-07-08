@@ -1,0 +1,18 @@
+<svg width="320" height="320" viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<linearGradient id="robot" x1="80" y1="50" x2="240" y2="240" gradientUnits="userSpaceOnUse"><stop stop-color="#8BCBFF"/><stop offset="1" stop-color="#2F80FF"/></linearGradient>
+</defs>
+<!-- transparent background -->
+<circle cx="160" cy="160" r="120" stroke="#3B82F6" stroke-width="10" opacity="0.9"/>
+<path d="M160 45V25" stroke="#3B82F6" stroke-width="8" stroke-linecap="round"/>
+<circle cx="160" cy="18" r="10" fill="#3B82F6"/>
+<rect x="78" y="78" width="164" height="130" rx="55" fill="url(#robot)"/>
+<rect x="98" y="105" width="124" height="82" rx="35" fill="white"/>
+<circle cx="135" cy="145" r="10" fill="#3B82F6"/>
+<circle cx="185" cy="145" r="10" fill="#3B82F6"/>
+<path d="M138 163C150 174 170 174 182 163" stroke="#3B82F6" stroke-width="6" stroke-linecap="round"/>
+<path d="M78 125H55M242 125H265" stroke="#60A5FA" stroke-width="10" stroke-linecap="round"/>
+<path d="M68 155H50M252 155H270" stroke="#93C5FD" stroke-width="8" stroke-linecap="round"/>
+<path d="M250 70L258 86L274 94L258 102L250 118L242 102L226 94L242 86L250 70Z" fill="#38BDF8"/>
+<path d="M70 55L76 67L88 73L76 79L70 91L64 79L52 73L64 67L70 55Z" fill="#60A5FA"/>
+</svg>
