@@ -1,3 +1,129 @@
+// AI Review 数据库模型定义
+// PostgreSQL + Prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// 用户表
+/// 存储用户的基本信息和认证数据
+model User {
+  /// 用户唯一标识
+  id        String   @id @default(uuid())
+  /// 用户邮箱，唯一
+  email     String   @unique
+  /// 用户手机号，唯一（可选）
+  phone     String?  @unique
+  /// 用户昵称
+  nickname  String
+  /// 用户头像 URL
+  avatar    String?
+  /// 加密后的密码
+  password  String
+  /// 个性签名
+  bio       String?
+  /// 创建时间
+  createdAt DateTime @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  /// 用户的复盘记录
+  reviews       ReviewRecord[]
+  /// 用户的对话会话
+  conversations Conversation[]
+
+  @@map("users")
+}
+
+/// 复盘记录表
+/// 存储用户复盘的完整信息，包括原始内容和 AI 生成的总结
+model ReviewRecord {
+  /// 复盘记录唯一标识
+  id               String   @id @default(uuid())
+  /// 所属用户 ID
+  userId           String   @map("user_id")
+  /// 复盘类型（daily/weekly/monthly/yearly/project）
+  type             String
+  /// 用户原始输入的复盘内容
+  content          String
+  /// AI 生成的复盘总结（JSON 格式）
+  summary          Json?
+  /// 复盘状态（draft/completed/generating/generated/failed）
+  status           String   @default("draft")
+  /// 创建时间
+  createdAt        DateTime @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  /// 关联的用户
+  user             User              @relation(fields: [userId], references: [id])
+  /// 关联的对话消息
+  messages         ConversationMessage[]
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@index([type])
+  @@map("review_records")
+}
+
+/// 对话会话表
+/// 管理用户与 AI 的对话会话
+model Conversation {
+  /// 会话唯一标识
+  id           String   @id @default(uuid())
+  /// 所属用户 ID
+  userId       String   @map("user_id")
+  /// 关联的复盘记录 ID（可选）
+  reviewId     String?  @map("review_id")
+  /// 会话标题
+  title        String?
+  /// 会话状态（active/closed）
+  status       String   @default("active")
+  /// 创建时间
+  createdAt    DateTime @default(now()) @map("created_at")
+  /// 更新时间
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  /// 关联的用户
+  user         User                  @relation(fields: [userId], references: [id])
+  /// 会话中的消息列表
+  messages     ConversationMessage[]
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("conversations")
+}
+
+/// 对话消息表
+/// 存储对话中的每一条消息
+model ConversationMessage {
+  /// 消息唯一标识
+  id               String   @id @default(uuid())
+  /// 所属会话 ID
+  conversationId   String   @map("conversation_id")
+  /// 关联的复盘记录 ID（可选，用于复盘对话关联）
+  reviewId         String?  @map("review_id")
+  /// 消息角色（user/assistant/system）
+  role             String
+  /// 消息内容
+  content          String
+  /// 创建时间
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  /// 关联的对话会话
+  conversation     Conversation @relation(fields: [conversationId], references: [id])
+  /// 关联的复盘记录（可选）
+  review           ReviewRecord? @relation(fields: [reviewId], references: [id])
+
+  @@index([conversationId])
+  @@index([conversationId, createdAt])
+  @@map("conversation_messages")
+}
 // AI Review database schema
 // PostgreSQL + Prisma
 

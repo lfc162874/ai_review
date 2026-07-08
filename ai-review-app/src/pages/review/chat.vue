@@ -1,32 +1,65 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import HomeTabBar from '@/components/home/HomeTabBar.vue'
+import { conversationApi } from '@/api/conversation'
+import type { ConversationMessage } from '@/api/conversation'
 
 interface Message {
   type: 'ai' | 'user'
   text: string
 }
 
-const messages = ref<Message[]>([
-  { type: 'ai', text: '这周最值得记录的一件事是什么？' },
-  { type: 'user', text: '我们上线了权限中心重构的第一版，虽然过程很曲折，但总算落地了。' },
-  { type: 'ai', text: '有没有一件事让你印象很深？' },
-  { type: 'user', text: '有个需求临时改了三次，差点影响了排期，挺考验团队协作的。' },
-  { type: 'ai', text: '如果重来一次，你最想优化什么？' },
-  { type: 'user', text: '我想在需求评审阶段就把边界和优先级对齐清楚。' },
-])
-
+const messages = ref<Message[]>([])
 const inputText = ref('')
+const conversationId = ref<string>('')
+const loading = ref(false)
 
 const goBack = () => {
   uni.navigateBack()
 }
 
-const sendMessage = () => {
+// 将 API 消息格式映射为页面展示格式
+const mapMessage = (msg: ConversationMessage): Message => ({
+  type: msg.role === 'assistant' ? 'ai' : 'user',
+  text: msg.content,
+})
+
+onMounted(async () => {
+  try {
+    const res = await conversationApi.create({ title: '复盘对话' })
+    conversationId.value = res.data.id
+    if (res.data.messages) {
+      messages.value = res.data.messages.map(mapMessage)
+    }
+  } catch (e) {
+    // 创建会话失败时保留默认引导消息
+    messages.value = [
+      { type: 'ai', text: '这周最值得记录的一件事是什么？' },
+    ]
+  }
+})
+
+const sendMessage = async () => {
   const text = inputText.value.trim()
   if (!text) return
   messages.value.push({ type: 'user', text })
   inputText.value = ''
+
+  if (!conversationId.value) {
+    uni.showToast({ title: '会话未创建', icon: 'none' })
+    return
+  }
+
+  loading.value = true
+  try {
+    const res = await conversationApi.sendMessage(conversationId.value, { content: text })
+    messages.value.push(mapMessage(res.data))
+  } catch (e) {
+    // 发送失败时移除刚添加的用户消息或提示
+    uni.showToast({ title: '消息发送失败', icon: 'none' })
+  } finally {
+    loading.value = false
+  }
 }
 
 const startVoice = () => {

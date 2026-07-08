@@ -3,8 +3,12 @@
 </template>
 
 <script setup lang="ts">
+const emit = defineEmits<{
+  finish: []
+}>()
+
 const finish = () => {
-  uni.navigateTo({ url: '/pages/review/result' })
+  emit('finish')
 }
 </script>
 
