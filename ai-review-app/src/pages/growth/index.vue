@@ -1,47 +1,61 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import HomeTabBar from '@/components/home/HomeTabBar.vue'
+import { reviewApi } from '@/api/review'
+import { useUserStore } from '@/stores/user'
+import type { Review } from '@/api/review'
 
-const posts = [
-  {
-    name: '柯南',
-    time: '今天 18:30',
-    content: '这周把权限中心重构第一版落地了，也意识到需求评审前置真的很重要。记录一下，少走弯路。',
-    images: ['', '', '', ''],
-    hasCard: true,
-    cardTitle: '权限中心重构 · 第一版落地',
-    cardDesc: '本周完成核心权限模型梳理与接口拆分，新增 12 个权限点，单测覆盖率提升至 82%。',
-    tags: [
-      { text: '项目推进', color: 'green' },
-      { text: '需求对齐', color: 'green' },
-      { text: '经验沉淀', color: 'green' },
-    ],
-  },
-  {
-    name: '小林',
-    time: '今天 12:10',
-    content: '复盘后发现，复杂功能最怕边界不清。先对齐目标，再开工，效率高很多。',
-    images: [],
-    hasCard: false,
-    tags: [
-      { text: '经验沉淀', color: 'blue' },
-      { text: '团队协作', color: 'blue' },
-    ],
-  },
-  {
-    name: '阿周',
-    time: '昨天 21:05',
-    content: '本月开始不只是解决问题，也开始沉淀方法。感觉自己真的在进步。',
-    images: [''],
-    hasCard: true,
-    cardTitle: '6 月成长复盘总结',
-    cardDesc: '复盘 18 次，沉淀方法 6 个，养成记录习惯，持续精进中 💪',
-    tags: [
-      { text: '月复盘', color: 'purple' },
-      { text: '成长总结', color: 'purple' },
-      { text: '自我提升', color: 'purple' },
-    ],
-  },
-]
+const userStore = useUserStore()
+const posts = ref<any[]>([])
+const loading = ref(true)
+const postIds = ref<string[]>([])
+
+const typeLabel = (t: string) => {
+  const map: Record<string, string> = {
+    daily: '每日复盘', weekly: '每周复盘', monthly: '每月复盘',
+    yearly: '年度复盘', project: '项目复盘',
+  }
+  return map[t] || '复盘'
+}
+
+const formatTime = (dateStr: string) => {
+  const d = new Date(dateStr)
+  const now = new Date()
+  const isToday = d.toDateString() === now.toDateString()
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  if (isToday) return `今天 ${hh}:${mm}`
+  const yesterday = new Date(now); yesterday.setDate(now.getDate() - 1)
+  if (d.toDateString() === yesterday.toDateString()) return `昨天 ${hh}:${mm}`
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${hh}:${mm}`
+}
+
+onMounted(async () => {
+  try {
+    const res = await reviewApi.list({ page: 1, pageSize: 20 })
+    const list = res.data.list
+    postIds.value = list.map((r: Review) => r.id)
+    posts.value = list.map((r: Review) => ({
+      name: userStore.userInfo?.nickname || '我',
+      time: formatTime(r.createdAt),
+      content: r.content,
+      images: [] as string[],
+      hasCard: !!r.summary,
+      cardTitle: r.summary ? typeLabel(r.type) : '',
+      cardDesc: r.summary?.overview || '',
+      tags: r.summary
+        ? r.summary.achievements.slice(0, 3).map((a: string) => ({ text: a, color: 'green' }))
+        : [{ text: typeLabel(r.type), color: 'blue' }],
+    }))
+  } catch { /* 失败时保留空列表 */ } finally {
+    loading.value = false
+  }
+})
+
+const openReview = (index: number) => {
+  const id = postIds.value[index]
+  if (id) uni.navigateTo({ url: `/pages/review/result?id=${id}` })
+}
 </script>
 
 <template>
@@ -77,7 +91,9 @@ const posts = [
 
     <!-- Feed -->
     <view class="feed">
-      <view v-for="(post, index) in posts" :key="index" class="post">
+      <view v-if="loading" class="empty-text">加载中...</view>
+      <view v-else-if="posts.length === 0" class="empty-text">暂无复盘动态，快来发表第一篇吧</view>
+      <view v-for="(post, index) in posts" :key="index" class="post" @click="openReview(index)">
         <view class="post-header">
           <image class="avatar" src="/static/icons/growth/avatar_default.svg" mode="widthFix" />
           <view class="post-meta">
@@ -250,6 +266,13 @@ const posts = [
   display: flex;
   flex-direction: column;
   gap: 24rpx;
+}
+
+.empty-text {
+  text-align: center;
+  color: #8994a8;
+  font-size: 28rpx;
+  padding: 80rpx 0;
 }
 
 .post {

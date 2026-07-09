@@ -5,8 +5,8 @@ export interface UserInfo {
   email: string
   nickname: string
   avatar: string | null
-  bio: string | null
-  createdAt: string
+  bio?: string | null
+  createdAt?: string
 }
 
 export interface UpdateUserDto {

@@ -15,6 +15,15 @@ export interface RefreshDto {
   refreshToken: string
 }
 
+export interface SendCodeDto {
+  phone: string
+}
+
+export interface PhoneLoginDto {
+  phone: string
+  code: string
+}
+
 export interface TokenPair {
   accessToken: string
   refreshToken: string
@@ -38,6 +47,16 @@ export const authApi = {
   /** 用户登录 */
   login(data: LoginDto) {
     return post<LoginResponse>('/auth/login', data)
+  },
+
+  /** 发送手机验证码 */
+  sendCode(data: SendCodeDto) {
+    return post<{ message: string }>('/auth/send-code', data)
+  },
+
+  /** 手机号验证码登录 */
+  phoneLogin(data: PhoneLoginDto) {
+    return post<LoginResponse>('/auth/phone-login', data)
   },
 
   /** 刷新 Token */

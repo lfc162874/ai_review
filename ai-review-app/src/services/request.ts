@@ -10,6 +10,60 @@ function getToken(): string | null {
   return uni.getStorageSync('accessToken')
 }
 
+function getRefreshToken(): string | null {
+  return uni.getStorageSync('refreshToken')
+}
+
+function setTokens(accessToken: string, refreshToken: string) {
+  uni.setStorageSync('accessToken', accessToken)
+  uni.setStorageSync('refreshToken', refreshToken)
+}
+
+function clearTokens() {
+  uni.removeStorageSync('accessToken')
+  uni.removeStorageSync('refreshToken')
+}
+
+// 防止并发请求同时刷新 token
+let refreshPromise: Promise<boolean> | null = null
+
+function tryRefreshToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken()
+  if (!refreshToken) return Promise.resolve(false)
+
+  if (refreshPromise) return refreshPromise
+
+  refreshPromise = new Promise<boolean>((resolveRefresh) => {
+    uni.request({
+      url: `${BASE_URL}/auth/refresh`,
+      method: 'POST',
+      header: { 'Content-Type': 'application/json' },
+      data: { refreshToken },
+      success: (res) => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          const body = res.data as ApiResponse<{ accessToken: string; refreshToken: string }>
+          if (body.code === 0 && body.data) {
+            setTokens(body.data.accessToken, body.data.refreshToken)
+            resolveRefresh(true)
+            return
+          }
+        }
+        clearTokens()
+        uni.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
+        resolveRefresh(false)
+      },
+      fail: () => {
+        clearTokens()
+        resolveRefresh(false)
+      },
+    })
+  }).finally(() => {
+    refreshPromise = null
+  })
+
+  return refreshPromise
+}
+
 export function request<T = any>(
   options: UniApp.RequestOptions
 ): Promise<ApiResponse<T>> {
@@ -23,16 +77,18 @@ export function request<T = any>(
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.header,
       },
-      success: (res) => {
+      success: async (res) => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           const response = res.data as ApiResponse<T>
           if (response.code !== 0) {
             const message = response.message || '请求失败'
+            // 未登录或登录已过期，尝试刷新 token
             if (response.code === 10002) {
-              // 未登录或登录已过期
-              uni.removeStorageSync('accessToken')
-              uni.removeStorageSync('refreshToken')
-              // 可以在这里触发跳转到登录页
+              const refreshed = await tryRefreshToken()
+              if (refreshed) {
+                request<T>(options).then(resolve).catch(reject)
+                return
+              }
             }
             uni.showToast({ title: message, icon: 'none' })
             reject(new Error(message))
@@ -40,10 +96,14 @@ export function request<T = any>(
           }
           resolve(response)
         } else if (res.statusCode === 401) {
-          uni.removeStorageSync('accessToken')
-          uni.removeStorageSync('refreshToken')
-          uni.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
-          reject(new Error('Unauthorized'))
+          const refreshed = await tryRefreshToken()
+          if (refreshed) {
+            request<T>(options).then(resolve).catch(reject)
+          } else {
+            clearTokens()
+            uni.showToast({ title: '登录已过期，请重新登录', icon: 'none' })
+            reject(new Error('Unauthorized'))
+          }
         } else {
           uni.showToast({ title: '网络错误', icon: 'none' })
           reject(new Error('Network Error'))

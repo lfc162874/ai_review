@@ -14,6 +14,9 @@ const inputText = ref('')
 const conversationId = ref<string>('')
 const loading = ref(false)
 
+const isInputHidden = ref(false)
+let scrollTimer: number | null = null
+
 const goBack = () => {
   uni.navigateBack()
 }
@@ -34,10 +37,20 @@ onMounted(async () => {
   } catch (e) {
     // 创建会话失败时保留默认引导消息
     messages.value = [
-      { type: 'ai', text: '这周最值得记录的一件事是什么？' },
+      { type: 'ai', text: '你好！我是你的复盘教练。让我们来一起回顾一下，你今天完成了哪些事情呢？' },
     ]
   }
 })
+
+const onScroll = () => {
+  isInputHidden.value = true
+  if (scrollTimer) {
+    clearTimeout(scrollTimer)
+  }
+  scrollTimer = setTimeout(() => {
+    isInputHidden.value = false
+  }, 500) as unknown as number
+}
 
 const sendMessage = async () => {
   const text = inputText.value.trim()
@@ -86,7 +99,7 @@ const startVoice = () => {
     </view>
 
     <!-- Chat list -->
-    <view class="chat-list">
+    <scroll-view class="chat-list" scroll-y @scroll="onScroll">
       <view v-for="(msg, index) in messages" :key="index" :class="['message', msg.type]">
         <image
           class="avatar"
@@ -97,33 +110,33 @@ const startVoice = () => {
           <text>{{ msg.text }}</text>
         </view>
       </view>
-    </view>
+    </scroll-view>
 
-    <!-- Bottom hint -->
-    <view class="hint">
-      <image class="hint-icon" src="/static/icons/chat/voice.svg" mode="widthFix" />
-      <text>也可以长按说话，AI 会自动整理重点</text>
-    </view>
-
-    <!-- Input bar -->
-    <view class="input-bar">
-      <input
-        class="input"
-        v-model="inputText"
-        placeholder="输入你的想法..."
-        placeholder-class="placeholder"
-      />
-      <view class="action-btn" @click="inputText.trim() ? sendMessage() : startVoice()">
-        <!-- 麦克风图标 -->
-        <svg v-if="!inputText.trim()" width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="18" y="8" width="12" height="22" rx="6" fill="white"/>
-          <path d="M12 25C12 33 18 37 24 37C30 37 36 33 36 25M24 37V42" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
-        </svg>
-        <!-- 发送图标 -->
-        <svg v-else width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M42 6L8 22L22 26L26 40L42 6Z" fill="white"/>
-          <path d="M22 26L42 6" stroke="#3788FF" stroke-width="3" stroke-linecap="round"/>
-        </svg>
+    <!-- Bottom input area -->
+    <view :class="['bottom-area', isInputHidden ? 'hidden' : '']">
+      <view class="hint">
+        <image class="hint-icon" src="/static/icons/chat/voice.svg" mode="widthFix" />
+        <text>也可以长按说话，AI 会自动整理重点</text>
+      </view>
+      <view class="input-bar">
+        <input
+          class="input"
+          v-model="inputText"
+          placeholder="输入你的想法..."
+          placeholder-class="placeholder"
+        />
+        <view class="action-btn" @click="inputText.trim() ? sendMessage() : startVoice()">
+          <!-- 麦克风图标 -->
+          <svg v-if="!inputText.trim()" width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="18" y="8" width="12" height="22" rx="6" fill="white"/>
+            <path d="M12 25C12 33 18 37 24 37C30 37 36 33 36 25M24 37V42" stroke="white" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+          <!-- 发送图标 -->
+          <svg v-else width="40" height="40" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M42 6L8 22L22 26L26 40L42 6Z" fill="white"/>
+            <path d="M22 26L42 6" stroke="#3788FF" stroke-width="3" stroke-linecap="round"/>
+          </svg>
+        </view>
       </view>
     </view>
 
@@ -134,11 +147,14 @@ const startVoice = () => {
 <style scoped>
 .page {
   min-height: 100vh;
+  height: 100vh;
   background: #f8fbff;
-  padding: 90rpx 30rpx 200rpx;
+  padding: 90rpx 30rpx 0;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 .bg {
@@ -155,7 +171,8 @@ const startVoice = () => {
 .header {
   position: relative;
   z-index: 1;
-  margin-bottom: 40rpx;
+  margin-bottom: 30rpx;
+  flex-shrink: 0;
 }
 
 .back {
@@ -203,15 +220,15 @@ const startVoice = () => {
 .chat-list {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 30rpx;
+  flex: 1;
+  overflow: hidden;
 }
 
 .message {
   display: flex;
   align-items: flex-start;
   gap: 18rpx;
+  margin-bottom: 30rpx;
 }
 
 .message.user {
@@ -247,14 +264,27 @@ const startVoice = () => {
   border-top-right-radius: 8rpx;
 }
 
-/* Hint */
-.hint {
+/* Bottom area */
+.bottom-area {
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
+  padding-bottom: 180rpx;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.bottom-area.hidden {
+  transform: translateY(100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Hint */
+.hint {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 40rpx;
+  margin-bottom: 16rpx;
   color: #8994a8;
   font-size: 26rpx;
 }
@@ -267,12 +297,9 @@ const startVoice = () => {
 
 /* Input bar */
 .input-bar {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: 16rpx;
-  margin-top: 24rpx;
   background: #fff;
   border-radius: 44rpx;
   padding: 12rpx 12rpx 12rpx 30rpx;

@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { authApi } from '@/api/auth'
+import { useUserStore } from '@/stores/user'
 
 const statusBarHeight = uni.getSystemInfoSync().statusBarHeight || 0
 const agreed = ref(false)
 const phone = ref('')
 const code = ref('')
 const countdown = ref(0)
+const userStore = useUserStore()
 
 const codeText = computed(() => {
   return countdown.value > 0 ? `${countdown.value}s` : '获取验证码'
@@ -33,20 +36,25 @@ const openHelp = () => {
 
 let timer: ReturnType<typeof setInterval> | null = null
 
-const sendCode = () => {
+const sendCode = async () => {
   if (!canSendCode.value) return
-  countdown.value = 60
-  timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0 && timer) {
-      clearInterval(timer)
-      timer = null
-    }
-  }, 1000)
-  uni.showToast({ title: '验证码已发送', icon: 'none' })
+  try {
+    await authApi.sendCode({ phone: phone.value })
+    countdown.value = 60
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0 && timer) {
+        clearInterval(timer)
+        timer = null
+      }
+    }, 1000)
+    uni.showToast({ title: '验证码已发送', icon: 'none' })
+  } catch (e: any) {
+    // 错误码 20011：发送过于频繁，由 request.ts 统一 toast 提示
+  }
 }
 
-const handleLogin = () => {
+const handleLogin = async () => {
   if (!isPhoneValid.value) {
     uni.showToast({ title: '请输入正确的手机号', icon: 'none' })
     return
@@ -59,7 +67,14 @@ const handleLogin = () => {
     uni.showToast({ title: '请先同意用户协议和隐私政策', icon: 'none' })
     return
   }
-  uni.showToast({ title: '登录开发中', icon: 'none' })
+  try {
+    const res = await authApi.phoneLogin({ phone: phone.value, code: code.value })
+    userStore.setToken(res.data.accessToken, res.data.refreshToken)
+    userStore.setUserInfo(res.data.user)
+    uni.switchTab({ url: '/pages/index/index' })
+  } catch (e: any) {
+    // 错误码 20009/20010 由 request.ts 统一 toast 提示
+  }
 }
 
 const openUserAgreement = () => {

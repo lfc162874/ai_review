@@ -1,8 +1,12 @@
+<script setup lang="ts">
+defineProps<{ nickname?: string }>()
+</script>
+
 <template>
   <view class="header">
     <view class="top">
       <view class="title-wrap">
-        <text class="title">AI复盘</text>
+        <text class="title">{{ nickname ? `${nickname}，你好` : 'AI复盘' }}</text>
         <view class="sparkle">
           <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M18 2C18.5 10.5 24.5 16 33 17C24.5 18 18.5 23.5 18 33C17.5 23.5 11.5 18 3 17C11.5 16 17.5 10.5 18 2Z" fill="#3B86FF"/>

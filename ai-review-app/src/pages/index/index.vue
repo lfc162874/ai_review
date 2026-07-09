@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { userApi } from '@/api/user'
+import { reviewApi } from '@/api/review'
+import type { Review } from '@/api/review'
 import HomeHeader from '@/components/home/HomeHeader.vue'
 import ReviewModeCard from '@/components/home/ReviewModeCard.vue'
 import ReviewPeriodCard from '@/components/home/ReviewPeriodCard.vue'
 import RecentReviewItem from '@/components/home/RecentReviewItem.vue'
 import HomeTabBar from '@/components/home/HomeTabBar.vue'
+
+const userStore = useUserStore()
+const recentReviews = ref<Review[]>([])
 
 const modes = [
   { title: '开始语音复盘', desc: '说给我听，我来整理', type: 'voice' as const },
@@ -17,19 +25,47 @@ const periods = [
   { title: '项目阶段', desc: '梳理阶段目标\n与结果', type: 'project' as const },
 ]
 
-const recent = [
-  { title: '7月周复盘', meta: '2024.07.14 · 语音 · 6 分钟', type: 'voice' as const },
-  { title: '投标项目阶段复盘', meta: '2024.07.10 · 对话 · 12 分钟', type: 'chat' as const },
-]
+onMounted(async () => {
+  // 获取用户信息
+  if (!userStore.userInfo) {
+    try {
+      const res = await userApi.getMe()
+      userStore.setUserInfo(res.data)
+    } catch {
+      // 获取失败时保留空
+    }
+  }
+  // 获取最近复盘
+  try {
+    const res = await reviewApi.list({ page: 1, pageSize: 5 })
+    recentReviews.value = res.data.list
+  } catch {
+    // 失败时保留空列表
+  }
+})
+
+const formatMeta = (r: Review) => {
+  const date = new Date(r.createdAt).toLocaleDateString('zh-CN')
+  const typeLabel = r.type === 'daily' ? '每日' : r.type === 'weekly' ? '每周' : r.type === 'monthly' ? '每月' : r.type === 'yearly' ? '年度' : '项目'
+  return `${date} · ${typeLabel}`
+}
+
+const goToResult = (id: string) => {
+  uni.navigateTo({ url: `/pages/review/result?id=${id}` })
+}
 </script>
 
 <template>
   <view class="page">
     <view class="background" />
-    <HomeHeader />
+    <HomeHeader :nickname="userStore.userInfo?.nickname" />
 
     <view class="mode-list">
-      <ReviewModeCard v-for="mode in modes" :key="mode.title" v-bind="mode" />
+      <ReviewModeCard
+        v-for="mode in modes"
+        :key="mode.title"
+        v-bind="mode"
+      />
     </view>
 
     <view class="section-title">
@@ -45,7 +81,15 @@ const recent = [
       <text class="more">全部 ＞</text>
     </view>
     <view class="recent-list">
-      <RecentReviewItem v-for="item in recent" :key="item.title" v-bind="item" />
+      <RecentReviewItem
+        v-for="item in recentReviews"
+        :key="item.id"
+        :title="item.content.slice(0, 20)"
+        :meta="formatMeta(item)"
+        :type="item.type === 'daily' ? 'voice' : 'chat'"
+        @click="goToResult(item.id)"
+      />
+      <text v-if="recentReviews.length === 0" class="empty">暂无复盘记录，快来开始第一次复盘吧</text>
     </view>
 
     <HomeTabBar active="home" />
@@ -101,5 +145,12 @@ const recent = [
 }
 .recent-list {
   margin-top: 24rpx;
+}
+.empty {
+  display: block;
+  text-align: center;
+  color: #8994a8;
+  font-size: 28rpx;
+  padding: 40rpx 0;
 }
 </style>
